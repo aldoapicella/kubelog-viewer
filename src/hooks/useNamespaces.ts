@@ -44,7 +44,9 @@ export function useNamespaces() {
         .map(ns => ns.metadata.name)
         .sort();
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 1 * 60 * 1000, // 1 minute (reduced from 5 minutes)
+    gcTime: 5 * 60 * 1000, // 5 minutes (reduced from 10 minutes)
+    refetchInterval: 2 * 60 * 1000, // Refetch every 2 minutes to keep data fresh
+    refetchOnWindowFocus: true, // Refetch when user returns to the tab
   });
 }

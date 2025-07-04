@@ -14,6 +14,12 @@ export interface LogStreamResult {
   resume: () => void;
   retry: () => void;
   clear: () => void;
+  exportLogs: (filename?: string, options?: ExportOptions) => void;
+}
+
+export interface ExportOptions {
+  includeTimestamps?: boolean;
+  includeMetadata?: boolean;
 }
 
 /**
@@ -224,6 +230,95 @@ export function useLogStream(
   }, []);
 
   /**
+   * Export logs to a downloadable .log file
+   */
+  const exportLogs = useCallback((filename?: string, options?: ExportOptions) => {
+    if (lines.length === 0) {
+      console.warn('No logs to export');
+      return;
+    }
+
+    const {
+      includeTimestamps = true,
+      includeMetadata = true
+    } = options || {};
+
+    // Generate filename if not provided
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const defaultFilename = `${namespace}-${pod}-${timestamp}.log`;
+    const finalFilename = filename || defaultFilename;
+
+    // Parse lines to separate timestamps and messages
+    const parsedLines = lines.map(line => {
+      const timestampRegex = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)\s+(.*)$/;
+      const match = line.match(timestampRegex);
+      
+      if (match) {
+        return {
+          timestamp: match[1],
+          message: match[2],
+          original: line
+        };
+      }
+      
+      return {
+        timestamp: null,
+        message: line,
+        original: line
+      };
+    });
+
+    // Build export content
+    const contentLines: string[] = [];
+
+    // Add metadata header if requested
+    if (includeMetadata) {
+      contentLines.push(
+        `# Kubernetes Pod Logs Export`,
+        `# Namespace: ${namespace}`,
+        `# Pod: ${pod}`,
+        `# Export Time: ${new Date().toISOString()}`,
+        `# Total Lines: ${lines.length}`,
+        `# Include Timestamps: ${includeTimestamps}`,
+        `# `,
+        ``
+      );
+    }
+
+    // Add log lines
+    if (includeTimestamps) {
+      // Keep original format with timestamps
+      contentLines.push(...parsedLines.map(line => line.original));
+    } else {
+      // Export only messages without timestamps
+      contentLines.push(...parsedLines.map(line => line.message));
+    }
+
+    // Create log content
+    const logContent = contentLines.join('\n');
+
+    // Create blob and download
+    const blob = new Blob([logContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    
+    // Create temporary download link
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = finalFilename;
+    link.style.display = 'none';
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Clean up object URL
+    URL.revokeObjectURL(url);
+    
+    console.log(`[LogStream] Exported ${lines.length} log lines to ${finalFilename}`);
+  }, [lines, namespace, pod]);
+
+  /**
    * Retry streaming (resets error state and retry count)
    */
   const retry = useCallback(() => {
@@ -261,5 +356,6 @@ export function useLogStream(
     resume,
     retry,
     clear,
+    exportLogs,
   };
 }

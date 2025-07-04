@@ -111,31 +111,31 @@ export const SearchBar = memo<SearchBarProps>(({
         <div className="flex gap-2">
           <button
             onClick={() => handleQuickFilter(60)}
-            className="px-3 py-2 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            className="px-3 py-2 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors cursor-pointer"
           >
             1m
           </button>
           <button
             onClick={() => handleQuickFilter(300)}
-            className="px-3 py-2 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            className="px-3 py-2 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors cursor-pointer"
           >
             5m
           </button>
           <button
             onClick={() => handleQuickFilter(1800)}
-            className="px-3 py-2 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            className="px-3 py-2 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors cursor-pointer"
           >
             30m
           </button>
           <button
             onClick={() => handleQuickFilter(3600)}
-            className="px-3 py-2 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            className="px-3 py-2 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors cursor-pointer"
           >
             1h
           </button>
           <button
             onClick={handleClearFilter}
-            className="px-3 py-2 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors"
+            className="px-3 py-2 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors cursor-pointer"
           >
             All
           </button>

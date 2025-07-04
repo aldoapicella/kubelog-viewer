@@ -1,7 +1,9 @@
 import { memo, useEffect, useRef, useState, useMemo } from 'react';
 import { useLogStream } from '../hooks/useLogStream';
+import type { ExportOptions } from '../hooks/useLogStream';
 import { LoadingSpinner } from './LoadingSpinner';
 import { ErrorAlert } from './ErrorAlert';
+import { ExportOptionsModal } from './ExportOptionsModal';
 
 interface LogViewerProps {
   namespace: string;
@@ -69,15 +71,22 @@ export const LogViewer = memo<LogViewerProps>(({
     pause, 
     resume, 
     retry,
-    clear
+    clear,
+    exportLogs
   } = useLogStream(namespace, pod, { 
     sinceSeconds
   });
   
   const [autoScroll, setAutoScroll] = useState(true);
   const [isStreamPaused, setIsStreamPaused] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const logContainerRef = useRef<HTMLDivElement>(null);
   const previousLinesLength = useRef(0);
+
+  // Clear logs when namespace, pod, or sinceSeconds filter changes to start fresh
+  useEffect(() => {
+    clear();
+  }, [namespace, pod, sinceSeconds, clear]);
 
   // Parse and filter logs based on search term and date range
   const filteredLogs = useMemo(() => {
@@ -200,7 +209,7 @@ export const LogViewer = memo<LogViewerProps>(({
           {/* Stream Pause/Resume Button */}
           <button
             onClick={handleToggleStream}
-            className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer ${
               isStreamPaused
                 ? 'bg-green-800 text-green-100 hover:bg-green-700'
                 : 'bg-orange-800 text-orange-100 hover:bg-orange-700'
@@ -227,7 +236,7 @@ export const LogViewer = memo<LogViewerProps>(({
           {/* Auto-scroll Toggle */}
           <button
             onClick={() => setAutoScroll(!autoScroll)}
-            className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer ${
               autoScroll
                 ? 'bg-blue-800 text-blue-100 hover:bg-blue-700'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
@@ -254,7 +263,7 @@ export const LogViewer = memo<LogViewerProps>(({
           {/* Clear Logs Button */}
           <button
             onClick={clear}
-            className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-red-800 text-red-100 hover:bg-red-700 transition-colors"
+            className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-red-800 text-red-100 hover:bg-red-700 transition-colors cursor-pointer"
             aria-label="Clear all logs"
           >
             <svg 
@@ -272,6 +281,30 @@ export const LogViewer = memo<LogViewerProps>(({
               />
             </svg>
             Clear
+          </button>
+
+          {/* Export Logs Button */}
+          <button
+            onClick={() => setShowExportModal(true)}
+            disabled={lines.length === 0}
+            className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-green-800 text-green-100 hover:bg-green-700 disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            aria-label="Export logs to file"
+          >
+            <svg 
+              className="w-4 h-4 mr-1" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" 
+              />
+            </svg>
+            Export
           </button>
         </div>
       </div>
@@ -319,6 +352,23 @@ export const LogViewer = memo<LogViewerProps>(({
           {isStreamPaused ? 'Stream paused' : 'Live streaming'}
         </span>
       </div>
+
+      {/* Export Options Modal */}
+      <ExportOptionsModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        onExport={(options) => {
+          // Convert modal options to hook options
+          const exportOptions: ExportOptions = {
+            includeTimestamps: options.includeTimestamps,
+            includeMetadata: options.includeMetadata
+          };
+          exportLogs(options.filename, exportOptions);
+        }}
+        totalLines={lines.length}
+        namespace={namespace}
+        pod={pod}
+      />
     </div>
   );
 });

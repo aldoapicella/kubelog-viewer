@@ -128,5 +128,7 @@ export function usePods(namespace: string) {
     enabled: Boolean(namespace),
     staleTime: 1 * 60 * 1000, // 1 minute
     gcTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 30 * 1000, // Refetch every 30 seconds to keep pod status fresh
+    refetchOnWindowFocus: true, // Refetch when user returns to the tab
   });
 }
