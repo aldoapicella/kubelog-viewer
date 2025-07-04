@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+  // …
+  "typeRoots": ["node_modules/@types"],
+  "types": ["node", "react", "react-dom"]
+  }
+}
