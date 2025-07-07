@@ -38,7 +38,7 @@ export function useNamespaces() {
   return useQuery({
     queryKey: ['namespaces'],
     queryFn: async (): Promise<string[]> => {
-      const response = await k8s.get<NamespaceList>('/api/v1/namespaces');
+      const response = await k8s.get<NamespaceList>('/v1/namespaces');
       return response.data.items
         .filter(ns => ns.status?.phase === 'Active')
         .map(ns => ns.metadata.name)

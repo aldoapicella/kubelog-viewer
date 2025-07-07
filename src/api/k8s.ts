@@ -2,6 +2,7 @@ import axios from 'axios';
 
 // Create axios instance for Kubernetes API calls
 export const k8s = axios.create({ 
+  baseURL: '/api',
   timeout: 15000 
 });
 

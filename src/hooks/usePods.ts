@@ -91,7 +91,7 @@ export function usePods(namespace: string) {
   return useQuery({
     queryKey: ['pods', namespace],
     queryFn: async (): Promise<PodInfo[]> => {
-      const response = await k8s.get<PodList>(`/api/v1/namespaces/${namespace}/pods`);
+      const response = await k8s.get<PodList>(`/v1/namespaces/${namespace}/pods`);
       
       return response.data.items.map(pod => {
         const containerStatuses = pod.status?.containerStatuses || [];
